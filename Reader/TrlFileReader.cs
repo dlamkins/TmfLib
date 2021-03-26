@@ -7,9 +7,9 @@ using System.Text;
 using TmfLib.Pathable;
 
 namespace TmfLib.Reader {
-    public class TrlFileReader {
+    public static class TrlFileReader {
 
-        public static IEnumerable<StaticTrailSection> GetTrailsFromStream(Stream trlDataStream) {
+        public static IEnumerable<TrailSection> GetTrailsFromStream(Stream trlDataStream) {
             if (!trlDataStream.CanSeek) throw new InvalidOperationException($"{nameof(trlDataStream)} must be a seekable stream.");
 
             using (var trlReader = new BinaryReader(trlDataStream, Encoding.ASCII)) {
@@ -29,7 +29,7 @@ namespace TmfLib.Reader {
                     float y = trlReader.ReadSingle();
 
                     if (z == 0 && x == 0 && y == 0) {
-                        yield return new StaticTrailSection(mapId, trailPoints);
+                        yield return new TrailSection(mapId, trailPoints);
                         trailPoints.Clear();
                     } else {
                         trailPoints.Add(new Vector3(x, y, z));
@@ -38,7 +38,7 @@ namespace TmfLib.Reader {
 
                 if (trailPoints.Any()) {
                     // Record the last trail segment
-                    yield return new StaticTrailSection(mapId, trailPoints);
+                    yield return new TrailSection(mapId, trailPoints);
                 }
             }
         }

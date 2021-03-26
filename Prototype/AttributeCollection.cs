@@ -33,6 +33,16 @@ namespace TmfLib.Prototype {
             return attribute != null;
         }
 
+        public bool TryGetSubset(string attributeNamePrefix, out AttributeCollection attributes) {
+            IAttribute[] subset = this.Where(a => a.Name.StartsWith(attributeNamePrefix, StringComparison.OrdinalIgnoreCase)).ToArray();
+
+            attributes = subset.Any()
+                             ? new AttributeCollection(subset)
+                             : null;
+
+            return attributes != null;
+        }
+
         protected override string GetKeyForItem(IAttribute item) => item.Name;
 
         public override string ToString() {

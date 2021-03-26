@@ -4,7 +4,11 @@ using System.Numerics;
 namespace TmfLib.Pathable {
     public interface ITrailSection {
 
-        int                  MapId       { get; }
+        /// <summary>
+        /// The map ID this <see cref="ITrailSection"/> is intended to show on.
+        /// </summary>
+        int MapId { get; }
+
         IEnumerable<Vector3> TrailPoints { get; }
 
     }

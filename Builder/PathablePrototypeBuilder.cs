@@ -37,7 +37,7 @@ namespace TmfLib.Builder {
 
                     trailAttributes.AddOrUpdateAttribute(new Prototype.Attribute(PackConstImpl.XML_KNOWNATTRIBUTE_MAPID, firstSegment.MapId.ToString()));
 
-                    return new PointOfInterest(pathableResourceManager, PointOfInterestType.Trail, trailAttributes, rootPathingCategory);
+                    return new Trail(pathableResourceManager, trailAttributes, rootPathingCategory);
                 } else {
                     // TODO: Log referenced trail file does not exist
                     Console.WriteLine("Log referenced trail file does not exist");

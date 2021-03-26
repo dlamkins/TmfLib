@@ -17,8 +17,8 @@ namespace TmfLib.Pathable {
         public IPackResourceManager ResourceManager { get; }
 
         public PointOfInterest(IPackResourceManager resourceManager, PointOfInterestType type, AttributeCollection explicitAttributes, PathingCategory rootPathingCategory) {
-            this.ResourceManager = resourceManager;
-            this.Type = type;
+            this.ResourceManager    = resourceManager;
+            this.Type               = type;
             this.ExplicitAttributes = explicitAttributes;
 
             Preprocess(rootPathingCategory);
