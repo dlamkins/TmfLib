@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -15,6 +16,8 @@ namespace TmfLib.Content {
 
         private readonly Mutex _exclusiveStreamAccessMutex;
 
+        private readonly HashSet<string> _entryList;
+
         public ZipArchiveReader(string archivePath, string subPath = "") {
             if (!File.Exists((archivePath)))
                 throw new FileNotFoundException("Archive path not found.", archivePath);
@@ -25,18 +28,24 @@ namespace TmfLib.Content {
             _exclusiveStreamAccessMutex = new Mutex(false);
 
             _archive = ZipFile.OpenRead(archivePath);
+
+            _entryList = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+            
+            foreach (var entry in _archive.Entries) {
+                _entryList.Add(GetUniformFileName(entry.FullName).ToLowerInvariant());
+            }
+
+            _entryList.TrimExcess();
         }
 
         public IDataReader GetSubPath(string subPath) {
             return new ZipArchiveReader(_archivePath, Path.Combine(subPath));
         }
-
-        /// <inheritdoc />
+        
         public string GetPathRepresentation(string relativeFilePath = null) {
             return $"{_archivePath}[{Path.GetFileName(Path.Combine(_subPath, relativeFilePath ?? string.Empty))}]";
         }
-
-        /// <inheritdoc />
+        
         public void LoadOnFileType(Action<Stream, IDataReader> loadFileFunc, string fileExtension = "", IProgress<string> progress = null) {
             var validEntries = _archive.Entries.Where(e => e.Name.EndsWith($"{fileExtension}", StringComparison.OrdinalIgnoreCase)).ToList();
 
@@ -49,9 +58,7 @@ namespace TmfLib.Content {
         }
 
         public bool FileExists(string filePath) {
-            return _archive.Entries.Any(entry =>
-                string.Equals(GetUniformFileName(entry.FullName), GetUniformFileName(Path.Combine(_subPath, filePath)), StringComparison.OrdinalIgnoreCase)
-            );
+            return _entryList.Contains(GetUniformFileName(filePath));
         }
 
         private string GetUniformFileName(string filePath) {
