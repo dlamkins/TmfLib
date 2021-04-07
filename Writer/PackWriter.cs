@@ -24,23 +24,23 @@ namespace TmfLib.Writer {
             this.PackWriterSettings = settings ?? PackWriterSettings.DefaultPackWriterSettings;
         }
 
-        public static async Task<Stream> GetPackArchiveStreamAsync(IPackCollection pack, PackWriterSettings settings = null) {
-            return await new PackWriter(settings).GetArchiveStreamAsync(pack);
+        public static async Task<Stream> GetPackArchiveStreamAsync(Pack pack, IPackCollection packCollection, PackWriterSettings settings = null) {
+            return await new PackWriter(settings).GetArchiveStreamAsync(pack, packCollection);
         }
 
-        public static async Task WritePackAsync(IPackCollection pack, string directoryPath, string packName, PackWriterSettings settings = null) {
-            await new PackWriter(settings).WriteAsync(pack, directoryPath, packName);
+        public static async Task WritePackAsync(Pack pack, IPackCollection packCollection, string directoryPath, string packName, PackWriterSettings settings = null) {
+            await new PackWriter(settings).WriteAsync(pack, packCollection, directoryPath, packName);
         }
 
-        private async IAsyncEnumerable<(string filename, Stream stream)> GetFileStreams(IPackCollection pack) {
+        private async IAsyncEnumerable<(string filename, Stream stream)> GetFileStreams(Pack pack, IPackCollection packCollection) {
             // Export categories
-            yield return (PackConstImpl.FILE_OPTIMIZED_MARKERCATEGORIES, WriteMarkerCategories(pack));
+            yield return (PackConstImpl.FILE_OPTIMIZED_MARKERCATEGORIES, WriteMarkerCategories(packCollection));
 
             // Get pathables by map ID
-            var groupedPathables = pack.PointsOfInterest
-                                       .Where(p => p.ParentPathingCategory != null && !ShouldIgnorePathableType(p))
-                                       .OrderBy(p => p.ParentPathingCategory.GetNamespace())
-                                       .GroupBy(p => p.MapId);
+            var groupedPathables = packCollection.PointsOfInterest
+                                       .Where(poi => poi.ParentPathingCategory != null && !ShouldIgnorePathableType(poi))
+                                       .OrderBy(poi => poi.ParentPathingCategory.GetNamespace())
+                                       .GroupBy(poi => poi.MapId);
 
             // Export each set of pathables per map
             foreach (var pathablesGroup in groupedPathables) {
@@ -51,7 +51,7 @@ namespace TmfLib.Writer {
             foreach (string resourceAttribute in new[] {PackConstImpl.XML_KNOWNATTRIBUTE_TEXTURE,
                                                         PackConstImpl.XML_KNOWNATTRIBUTE_ICONFILE,
                                                         PackConstImpl.XML_KNOWNATTRIBUTE_TRAILDATA}) {
-                await foreach (var resource in GetReferencedResources(pack, resourceAttribute)) {
+                await foreach (var resource in GetReferencedResources(pack, packCollection, resourceAttribute)) {
                     yield return resource;
                 }
             }
@@ -68,8 +68,8 @@ namespace TmfLib.Writer {
             }
         }
 
-        private async IAsyncEnumerable<(string filename, Stream stream)> GetReferencedResources(IPackCollection pack, string resourceAttribute) {
-            IEnumerable<string> resources = pack.PointsOfInterest
+        private async IAsyncEnumerable<(string filename, Stream stream)> GetReferencedResources(Pack pack, IPackCollection packCollection, string resourceAttribute) {
+            IEnumerable<string> resources = packCollection.PointsOfInterest
                                                 .Where(p => !ShouldIgnorePathableType(p))
                                                 .Select(p => p.GetAggregatedAttributeValue(resourceAttribute))
                                                 .Distinct()
@@ -80,12 +80,12 @@ namespace TmfLib.Writer {
             }
         }
 
-        public async Task WriteAsync(IPackCollection pack, string directoryPath, string packName) {
+        public async Task WriteAsync(Pack pack, IPackCollection packCollection, string directoryPath, string packName) {
             if (!Directory.Exists(directoryPath)) throw new DirectoryNotFoundException($"Directory path '{directoryPath}' does not exist.");
 
             switch (this.PackWriterSettings.PackOutputMethod) {
                 case PackWriterSettings.OutputMethod.Archive:
-                    var archive = await GetArchiveStreamAsync(pack);
+                    var archive = await GetArchiveStreamAsync(pack, packCollection);
 
                     string packPath = Path.Combine(directoryPath, packName);
 
@@ -98,7 +98,7 @@ namespace TmfLib.Writer {
 
                     Directory.CreateDirectory(rootPath);
 
-                    await foreach (var file in GetFileStreams(pack)) {
+                    await foreach (var file in GetFileStreams(pack, packCollection)) {
                         string filePath = Path.Combine(rootPath, file.filename);
                         string fileDir  = Path.GetDirectoryName(filePath);
 
@@ -112,11 +112,11 @@ namespace TmfLib.Writer {
             }
         }
 
-        public async Task<Stream> GetArchiveStreamAsync(IPackCollection pack) {
+        public async Task<Stream> GetArchiveStreamAsync(Pack pack, IPackCollection packCollection) {
             var archiveStream = new MemoryStream();
 
             using (var outputZip = new ZipArchive(archiveStream, ZipArchiveMode.Create, true)) { 
-                await foreach (var file in GetFileStreams(pack)) {
+                await foreach (var file in GetFileStreams(pack, packCollection)) {
                     using (var fileEntryStream = outputZip.CreateEntry(file.filename).Open()) {
                         await file.stream.CopyToAsync(fileEntryStream);
                     }

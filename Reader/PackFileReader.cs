@@ -6,10 +6,12 @@ using NanoXml;
 namespace TmfLib.Reader {
     public class PackFileReader {
 
-        private readonly IPackCollection _pack;
+        private readonly IPackCollection      _packCollection;
+        private readonly IPackResourceManager _packResourceManager;
 
-        public PackFileReader(IPackCollection pack) {
-            _pack = pack;
+        public PackFileReader(IPackCollection packCollection, IPackResourceManager packResourceManager) {
+            _packCollection      = packCollection;
+            _packResourceManager = packResourceManager;
         }
 
         public async Task<bool> PopulatePackFromStream(Stream xmlPackStream) {
@@ -44,7 +46,7 @@ namespace TmfLib.Reader {
             var categoryNodes = packDocument.RootNode.SelectNodes(PackConstImpl.XML_ELEMENT_MARKERCATEGORY);
 
             for (int i = 0; i < categoryNodes.Length; i++) {
-                Builder.PathableCategoryBuilder.UnpackCategory(categoryNodes[i], _pack.Categories);
+                Builder.PathableCategoryBuilder.UnpackCategory(categoryNodes[i], _packCollection.Categories);
             }
         }
 
@@ -55,10 +57,10 @@ namespace TmfLib.Reader {
                 var poisNode = poisNodes[j];
 
                 for (int i = 0; i < poisNode.SubNodes.Count; i++) {
-                    var nPathable = Builder.PathablePrototypeBuilder.UnpackPathable(poisNode.SubNodes[i], _pack.ResourceManager, _pack.Categories);
+                    var nPathable = Builder.PathablePrototypeBuilder.UnpackPathable(poisNode.SubNodes[i], _packResourceManager, _packCollection.Categories);
 
                     if (nPathable != null) {
-                        _pack.PointsOfInterest.Add(nPathable);
+                        _packCollection.PointsOfInterest.Add(nPathable);
                     }
                 }
             }

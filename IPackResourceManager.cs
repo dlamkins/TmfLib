@@ -9,7 +9,5 @@ namespace TmfLib {
 
         byte[] LoadResource(string resourcePath);
 
-        void Unload();
-
     }
 }

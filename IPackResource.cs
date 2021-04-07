@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace TmfLib {
+﻿namespace TmfLib {
     public interface IPackResource {
 
         byte[] Data { get; }

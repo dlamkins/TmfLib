@@ -1,11 +1,9 @@
 ﻿using System;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace TmfLib {
     public class PackResource : IPackResource {
 
-        private readonly Func<byte[]>    _refreshData;
+        private readonly Func<byte[]>          _refreshData;
         private readonly WeakReference<byte[]> _dataReference;
 
         public byte[] Data => GetData();

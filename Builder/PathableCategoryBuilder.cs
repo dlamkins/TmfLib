@@ -54,21 +54,27 @@ namespace TmfLib.Builder {
         public static PathingCategory FromNanoXmlNode(NanoXmlNode categoryNode, PathingCategory parent) {
             string categoryName = GetTacOSafeName(categoryNode.GetAttribute(MARKERCATEGORY_NAME_ATTR)?.Value);
 
-            // Can't define a marker category without a name
+            // Can't define a marker category without a name.
             if (string.IsNullOrEmpty(categoryName)) {
                 // TODO: Log markercategory has no name.
                 return null;
             }
 
             var subjCategory = parent.Contains(categoryName)
-                                   // We're extending an existing category
+                                   // We're extending an existing category.
                                    ? parent[categoryName]
-                                   // We're adding a new category
+                                   // We're adding a new category.
                                    : parent.GetOrAddCategoryFromNamespace(categoryName);
 
-            subjCategory.DisplayName   = categoryNode.GetAttribute(MARKERCATEGORY_DISPLAYNAME_ATTR)?.Value;
-            subjCategory.IsSeparator   = categoryNode.GetAttribute(MARKERCATEGORY_ISSEPARATOR_ATTR)?.Value   == "1";
-            subjCategory.DefaultToggle = categoryNode.GetAttribute(MARKERCATEGORY_DEFAULTTOGGLE_ATTR)?.Value != "0";
+            // Have to ensure we only override if the attributes exist in case we're overwriting an existing category.
+            if (categoryNode.TryGetAttribute(MARKERCATEGORY_DISPLAYNAME_ATTR, out var displayNameAttr))
+                subjCategory.DisplayName = displayNameAttr.Value;
+
+            if (categoryNode.TryGetAttribute(MARKERCATEGORY_ISSEPARATOR_ATTR, out var isSeparatorAttr))
+                subjCategory.IsSeparator = isSeparatorAttr.Value == "1";
+
+            if (categoryNode.TryGetAttribute(MARKERCATEGORY_DEFAULTTOGGLE_ATTR, out var defaultToggleAttr))
+                subjCategory.DefaultToggle = defaultToggleAttr.Value != "0";
 
             subjCategory.SetAttributes(PathablePrototypeAttributeBuilder.FromNanoXmlNode(categoryNode));
 

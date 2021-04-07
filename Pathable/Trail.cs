@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Numerics;
 using TmfLib.Prototype;
@@ -19,8 +18,7 @@ namespace TmfLib.Pathable {
         private void Preprocess(PathingCategory rootPathingCategory) {
             // Load trail data
             if (this.TryGetAggregatedAttributeValue(PackConstImpl.XML_KNOWNATTRIBUTE_TRAILDATA, out string trlFilePath)) {
-                byte[] trlData = this.ResourceManager.LoadResource(trlFilePath);
-                this.TrailSections = TrlFileReader.GetTrailsFromStream(new MemoryStream(trlData)).Cast<ITrailSection>();
+                this.TrailSections = TrlFileReader.GetTrailSegments(this.ResourceManager.LoadResource(trlFilePath));
             }
         }
 

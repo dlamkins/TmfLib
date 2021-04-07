@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using NanoXml;
 using TmfLib.Pathable;
@@ -33,7 +32,7 @@ namespace TmfLib.Builder {
                 if (pathableResourceManager.ResourceExists(trlFile)) {
                     var trlStream = pathableResourceManager.LoadResource(trlFile);
 
-                    var firstSegment = TrlFileReader.GetTrailsFromStream(new MemoryStream(trlStream)).First();
+                    var firstSegment = TrlFileReader.GetTrailSegments(trlStream).First();
 
                     trailAttributes.AddOrUpdateAttribute(new Prototype.Attribute(PackConstImpl.XML_KNOWNATTRIBUTE_MAPID, firstSegment.MapId.ToString()));
 

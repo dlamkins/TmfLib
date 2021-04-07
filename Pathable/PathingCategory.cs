@@ -23,19 +23,19 @@ namespace TmfLib.Pathable {
 
                 _parent = value;
                 _parent?.Add(this);
+
+                _cachedNamespace = null;
             }
         }
+
+        private string _cachedNamespace = null;
 
         /// <summary>
         /// Indicates that the category is the root node (which contains all categories loaded for a pack).
         /// </summary>
         public bool Root { get; }
 
-        private string _displayName;
-        public string DisplayName {
-            get => _displayName ?? this.Name;
-            set => _displayName = value;
-        }
+        public  string DisplayName { get; set; } = string.Empty;
 
         public bool IsSeparator { get; set; }
 
@@ -51,7 +51,8 @@ namespace TmfLib.Pathable {
             this.Root = root;
         }
 
-        public string GetNamespace() => string.Join(".", this.GetParentsDesc().Select(c => c.Name));
+        // TODO: Review cache invalidation - it doesn't bubble down, so can become invalid if an ancestor changes its parent.
+        public string GetNamespace() => _cachedNamespace ??= string.Join(".", this.GetParentsDesc().Select(c => c.Name));
 
         /// <summary>
         /// Enumerates the category in ascending order up to its highest level parent.
@@ -90,28 +91,28 @@ namespace TmfLib.Pathable {
 
             string segmentValue = namespaceSegments[0];
 
-            // Remove this namespace segment so that we can process this recursively
+            // Remove this namespace segment so that we can process this recursively.
             namespaceSegments.RemoveAt(0);
 
             PathingCategory targetPathingCategory;
 
             if (!this.Contains(segmentValue)) {
-                // Subcategory was not already defined
+                // Subcategory was not already defined.
                 targetPathingCategory = new PathingCategory(segmentValue) { Parent = this };
             } else {
-                // Subcategory was already defined
+                // Subcategory was already defined.
                 targetPathingCategory = this[segmentValue];
             }
 
             return namespaceSegments.Any()
-                       // Not at end of namespace - continue drilling
+                       // Not at end of namespace - continue drilling.
                        ? targetPathingCategory.GetOrAddCategoryFromNamespace(namespaceSegments)
-                       // At end of namespace - return target category
+                       // At end of namespace - return target category.
                        : targetPathingCategory;
         }
 
-        protected override string GetKeyForItem(PathingCategory item) {
-            return item.Name;
+        protected override string GetKeyForItem(PathingCategory category) {
+            return category.Name;
         }
 
     }

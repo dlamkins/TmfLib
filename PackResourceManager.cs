@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.IO;
 using System.Threading.Tasks;
 using TmfLib.Content;
 
@@ -37,10 +36,6 @@ namespace TmfLib {
             }
 
             return _cachedResources[resourcePath].Data;
-        }
-
-        public void Unload() {
-            _cachedResources.Clear();
         }
 
     }

@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TmfLib.Content;
+using TmfLib.Pathable;
 using TmfLib.Reader;
 
 namespace TmfLib {
@@ -31,10 +33,10 @@ namespace TmfLib {
 
         public static Pack FromDirectoryMarkerPack(string directoryPath) => new Pack(new DirectoryReader(directoryPath));
 
-        public async Task<PackCollection> LoadAllAsync() {
-            var collection = new PackCollection(this.ResourceManager);
+        public async Task<IPackCollection> LoadAllAsync(IPackCollection packCollection = null) {
+            var collection = packCollection ?? new PackCollection();
 
-            var markerReader = new PackFileReader(collection);
+            var markerReader = new PackFileReader(collection, this.ResourceManager);
 
             var candidates = new List<(Stream fileStream, IDataReader dataReader)>();
 
@@ -49,10 +51,10 @@ namespace TmfLib {
             return collection;
         }
 
-        private async Task<IPackCollection> LoadMapFromOptimizedMarkerPackAsync(int mapId) {
-            var collection = new PackCollection(this.ResourceManager);
+        private async Task<IPackCollection> LoadMapFromOptimizedMarkerPackAsync(int mapId, IPackCollection packCollection) {
+            var collection = packCollection ?? new PackCollection();
 
-            var markerReader = new PackFileReader(collection);
+            var markerReader = new PackFileReader(collection, this.ResourceManager);
 
             await markerReader.PopulatePackFromStream(await _dataReader.GetFileStreamAsync(PackConstImpl.FILE_OPTIMIZED_MARKERCATEGORIES));
 
@@ -63,19 +65,20 @@ namespace TmfLib {
             return collection;
         }
 
-        private async Task<IPackCollection> LoadMapFromNonOptimizedMarkerPackAsync(int mapId) {
-            var completeCollection = await LoadAllAsync();
+        private async Task<IPackCollection> LoadMapFromNonOptimizedMarkerPackAsync(int mapId, IPackCollection packCollection) {
+            await LoadAllAsync(packCollection == null
+                                   ? null
+                                   : new FilteredPackCollection(packCollection,
+                                                                poi => poi.MapId == mapId));
 
-            return new PackCollection(completeCollection.ResourceManager,
-                                            completeCollection.Categories,
-                                            completeCollection.PointsOfInterest.Where(p => p.MapId == mapId));
+            return packCollection;
         }
 
-        public async Task<IPackCollection> LoadMapAsync(int mapId) {
+        public async Task<IPackCollection> LoadMapAsync(int mapId, IPackCollection packCollection = null) {
             if (this.ManifestedPack) {
-                return await LoadMapFromOptimizedMarkerPackAsync(mapId);
+                return await LoadMapFromOptimizedMarkerPackAsync(mapId, packCollection);
             } else {
-                return await LoadMapFromNonOptimizedMarkerPackAsync(mapId);
+                return await LoadMapFromNonOptimizedMarkerPackAsync(mapId, packCollection);
             }   
         }
 

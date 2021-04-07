@@ -11,8 +11,8 @@ namespace NanoXml {
         private readonly string _value;
         private readonly string _name;
 
-        private readonly List<NanoXmlNode>      _subNodes   = new List<NanoXmlNode>();
-        private readonly List<NanoXmlAttribute> _attributes = new List<NanoXmlAttribute>();
+        private readonly List<NanoXmlNode>      _subNodes   = new();
+        private readonly List<NanoXmlAttribute> _attributes = new();
 
         internal NanoXmlNode(string str, ref int i) {
             _name = ParseAttributes(str, ref i, _attributes, '>', '/');
@@ -145,6 +145,14 @@ namespace NanoXml {
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Returns <c>true</c> if the attribute exists or <c>false</c> if not.
+        /// </summary>
+        /// <param name="attributeName">Attribute name to get</param>
+        public bool TryGetAttribute(string attributeName, out NanoXmlAttribute attribute) {
+            return (attribute = GetAttribute(attributeName)) != null;
         }
     }
 }

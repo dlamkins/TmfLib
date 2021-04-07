@@ -20,8 +20,8 @@ namespace NanoXml {
         public string Value => _value;
 
         internal NanoXmlAttribute(string name, string value) {
-            _name  = name;
-            _value = value;
+            _name  = string.Intern(name);
+            _value = string.Intern(value);
         }
 
     }
