@@ -15,7 +15,7 @@ namespace NanoXml {
         private readonly List<NanoXmlAttribute> _attributes = new();
 
         internal NanoXmlNode(string str, ref int i) {
-            _name = ParseAttributes(str, ref i, _attributes, '>', '/');
+            _name = string.Intern(ParseAttributes(str, ref i, _attributes, '>', '/'));
 
             if (str[i] == '/') { // if this node has nothing inside
                 i++; // skip /
