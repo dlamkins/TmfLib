@@ -83,22 +83,31 @@ namespace TmfLib.Pathable {
         public PathingCategory GetOrAddCategoryFromNamespace(string @namespace) {
             if (@namespace == null) throw new ArgumentNullException(nameof(@namespace));
 
-            return this.GetOrAddCategoryFromNamespace(@namespace.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries));
+            return InternalGetOrAddCategoryFromNamespace(@namespace, true);
         }
 
-        public PathingCategory GetOrAddCategoryFromNamespace(IEnumerable<string> splitNamespace) {
-            List<string> namespaceSegments = splitNamespace.ToList();
+        public bool TryGetCategoryFromNamespace(string @namespace, out PathingCategory category) {
+            if (@namespace == null) throw new ArgumentNullException(nameof(@namespace));
 
-            string segmentValue = namespaceSegments[0];
+            return (category = InternalGetOrAddCategoryFromNamespace(@namespace, false)) != null;
+        }
 
-            // Remove this namespace segment so that we can process this recursively.
-            namespaceSegments.RemoveAt(0);
+        private PathingCategory InternalGetOrAddCategoryFromNamespace(string @namespace, bool canAdd) {
+            return InternalGetOrAddCategoryFromNamespace(new Queue<string>(@namespace.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries)), canAdd);
+        }
+
+        private PathingCategory InternalGetOrAddCategoryFromNamespace(Queue<string> namespaceSegments, bool canAdd) {
+            string segmentValue = namespaceSegments.Dequeue();
 
             PathingCategory targetPathingCategory;
 
             if (!this.Contains(segmentValue)) {
                 // Subcategory was not already defined.
-                targetPathingCategory = new PathingCategory(segmentValue) { Parent = this };
+                if (canAdd) {
+                    targetPathingCategory = new PathingCategory(segmentValue) { Parent = this };
+                } else {
+                    return null;
+                }
             } else {
                 // Subcategory was already defined.
                 targetPathingCategory = this[segmentValue];
@@ -106,7 +115,7 @@ namespace TmfLib.Pathable {
 
             return namespaceSegments.Any()
                        // Not at end of namespace - continue drilling.
-                       ? targetPathingCategory.GetOrAddCategoryFromNamespace(namespaceSegments)
+                       ? targetPathingCategory.InternalGetOrAddCategoryFromNamespace(namespaceSegments, canAdd)
                        // At end of namespace - return target category.
                        : targetPathingCategory;
         }
