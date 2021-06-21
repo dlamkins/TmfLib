@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using NanoXml;
 using TmfLib.Pathable;
@@ -31,7 +32,7 @@ namespace TmfLib.Builder {
         private static string GetTacOSafeName(string name) {
             // TacO documentation states: Must not contain any spaces or special characters.
             // http://www.gw2taco.com/2016/01/how-to-create-your-own-marker-pack.html
-            // Behavior: Anything other than a letter, number, or period is converted to an underscore.
+            // Actual TacO behavior: Anything other than a letter, number, or period is converted to an underscore.
             // REF: https://github.com/blish-hud/Community-Module-Pack/issues/59
 
             if (name == null) return string.Empty;
@@ -75,6 +76,14 @@ namespace TmfLib.Builder {
 
             if (categoryNode.TryGetAttribute(MARKERCATEGORY_DEFAULTTOGGLE_ATTR, out var defaultToggleAttr))
                 subjCategory.DefaultToggle = defaultToggleAttr.Value != "0";
+
+            // Remove redundant attributes now kept track of by the pathable itself.
+            categoryNode.Attributes.RemoveAll(attr => new[] {
+                                                  MARKERCATEGORY_NAME_ATTR,
+                                                  MARKERCATEGORY_DISPLAYNAME_ATTR,
+                                                  MARKERCATEGORY_ISSEPARATOR_ATTR,
+                                                  MARKERCATEGORY_DEFAULTTOGGLE_ATTR
+                                              }.Contains(attr.Name));
 
             subjCategory.SetAttributes(PathablePrototypeAttributeBuilder.FromNanoXmlNode(categoryNode));
 

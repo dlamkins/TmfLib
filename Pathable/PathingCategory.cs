@@ -7,6 +7,9 @@ using TmfLib.Prototype;
 namespace TmfLib.Pathable {
     public class PathingCategory : KeyedCollection<string, PathingCategory>, IAggregatesAttributes {
 
+        private const bool DEFAULT_ISSEPARATOR   = false;
+        private const bool DEFAULT_DEFAULTTOGGLE = true;
+
         public AttributeCollection ExplicitAttributes { get; } = new();
 
         IAggregatesAttributes IAggregatesAttributes.AttributeParent => Parent;
@@ -37,9 +40,9 @@ namespace TmfLib.Pathable {
 
         public  string DisplayName { get; set; } = string.Empty;
 
-        public bool IsSeparator { get; set; }
+        public bool IsSeparator { get; set; } = DEFAULT_ISSEPARATOR;
 
-        public bool DefaultToggle { get; set; }
+        public bool DefaultToggle { get; set; } = DEFAULT_DEFAULTTOGGLE;
 
         public SynchronizedCollection<PointOfInterest> Pathables { get; } = new();
 

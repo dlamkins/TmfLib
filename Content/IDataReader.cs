@@ -7,7 +7,7 @@ namespace TmfLib.Content {
     /// <summary>
     /// Provides methods to read from various file systems, endpoints, and formats.
     /// </summary>
-    internal interface IDataReader : IDisposable {
+    public interface IDataReader : IDisposable {
 
         /// <summary>
         /// Gets a new <see cref="IDataReader"/> with the root path set to the provided <see cref="subPath"/>.
@@ -54,17 +54,6 @@ namespace TmfLib.Content {
         /// If the file does not exist or cannot be read, <see cref="T:null"/> will be returned instead of <see cref="T:byte[]"/>.
         /// </returns>
         byte[] GetFileBytes(string filePath);
-
-        /// <summary>
-        /// Opens a file, writes the raw data to the provided <see cref="fileBuffer"/> and returns the length of the data read.
-        /// </summary>
-        /// <param name="filePath">A path to a file within the context of the <see cref="IDataReader"/>.</param>
-        /// <param name="fileBuffer">The buffer to write the file's data into.</param>
-        /// <returns>
-        /// The total number of bytes successfully read into the <see cref="fileBuffer"/>.
-        /// If the file does not exist or cannot be read, the buffer will be empty and the return value will be 0.
-        /// </returns>
-        int GetFileBytes(string filePath, out byte[] fileBuffer);
 
         /// <summary>
         /// Asynchronously retreives a stream of the file.

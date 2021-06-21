@@ -110,20 +110,6 @@ namespace TmfLib.Content {
             return null;
         }
 
-        public int GetFileBytes(string filePath, out byte[] fileBuffer) {
-            fileBuffer = null;
-
-            // We know GetFileStream returns a MemoryStream, so we don't check
-            using (var fileStream = GetFileStream(filePath) as MemoryStream) {
-                if (fileStream != null) {
-                    fileBuffer = fileStream.GetBuffer();
-                    return (int)fileStream.Length;
-                }
-            }
-
-            return 0;
-        }
-
         public async Task<Stream> GetFileStreamAsync(string filePath) {
             return await Task.FromResult(GetFileStream(filePath));
         }

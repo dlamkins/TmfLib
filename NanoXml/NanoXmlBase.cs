@@ -40,15 +40,15 @@ namespace NanoXml {
         }
 
         // returns name
-        protected static string ParseAttributes(string str, ref int i, List<NanoXmlAttribute> attributes, char endChar, char endChar2) {
+        protected static string ParseAttributes(string str, ref int i, List<NanoXmlAttribute> attributes, char endChar, char endChar2, string[] trimmedPrefixes) {
             SkipSpaces(str, ref i);
             // name of the element
-            string name = CleanName(GetValue(str, ref i, endChar, endChar2, true));
+            string name = CleanName(GetValue(str, ref i, endChar, endChar2, true), trimmedPrefixes);
 
             SkipSpaces(str, ref i);
 
             while (str[i] != endChar && str[i] != endChar2) {
-                string attrName = CleanName(GetValue(str, ref i, '=', '\0', true));
+                string attrName = CleanName(GetValue(str, ref i, '=', '\0', true), trimmedPrefixes);
 
                 SkipSpaces(str, ref i);
                 i++; // skip '='
@@ -70,12 +70,22 @@ namespace NanoXml {
             return name;
         }
 
-        protected static string CleanName(string str) {
+        protected static string CleanName(string str, string[] trimmedPrefixes) {
             // COMPAT: Some packs have random invalid characters
             // COMPAT: Tekkit packs have 0 before behavior in some places
-            return str.Replace("*", "")
-                      .TrimStart('0')
-                      .ToLowerInvariant();
+            string cleanName = str.Replace("*", "")
+                                  .TrimStart('0')
+                                  .ToLowerInvariant();
+
+            // Vender prefix support allows us to ignore the
+            // prefix when the caller wants to support it.
+            foreach (string venderPrefix in trimmedPrefixes) {
+                if (cleanName.StartsWith(venderPrefix)) {
+                    return cleanName.Remove(0, venderPrefix.Length);
+                }
+            }
+
+            return cleanName;
         }
 
         protected static string CleanValue(string str) {

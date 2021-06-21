@@ -14,8 +14,8 @@ namespace NanoXml {
         private readonly List<NanoXmlNode>      _subNodes   = new();
         private readonly List<NanoXmlAttribute> _attributes = new();
 
-        internal NanoXmlNode(string str, ref int i) {
-            _name = string.Intern(ParseAttributes(str, ref i, _attributes, '>', '/'));
+        internal NanoXmlNode(string str, ref int i, string[] trimmedPrefixes) {
+            _name = string.Intern(ParseAttributes(str, ref i, _attributes, '>', '/', trimmedPrefixes));
 
             if (str[i] == '/') { // if this node has nothing inside
                 i++; // skip /
@@ -35,7 +35,7 @@ namespace NanoXml {
 
                 while (str[i + 1] != '/') { // parse subnodes
                     i++; // skip <
-                    _subNodes.Add(new NanoXmlNode(str, ref i));
+                    _subNodes.Add(new NanoXmlNode(str, ref i, trimmedPrefixes));
 
                     SkipSpaces(str, ref i);
 
@@ -62,7 +62,7 @@ namespace NanoXml {
             i++; // skip /
             SkipSpaces(str, ref i);
 
-            string endName = CleanName(GetValue(str, ref i, '>', '\0', true));
+            string endName = CleanName(GetValue(str, ref i, '>', '\0', true), trimmedPrefixes);
             if (endName != _name)
                 throw new NanoXmlParsingException("Start/end tag name mismatch: " + _name + " and " + endName);
 

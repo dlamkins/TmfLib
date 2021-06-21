@@ -4,14 +4,18 @@ using System.Threading.Tasks;
 using NanoXml;
 
 namespace TmfLib.Reader {
-    public class PackFileReader {
+    public class PackReader {
 
         private readonly IPackCollection      _packCollection;
         private readonly IPackResourceManager _packResourceManager;
 
-        public PackFileReader(IPackCollection packCollection, IPackResourceManager packResourceManager) {
+        public PackReaderSettings PackReaderSettings { get; set; }
+
+        public PackReader(IPackCollection packCollection, IPackResourceManager packResourceManager, PackReaderSettings settings = null) {
             _packCollection      = packCollection;
             _packResourceManager = packResourceManager;
+
+            this.PackReaderSettings = settings ?? PackReaderSettings.DefaultPackReaderSettings;
         }
 
         public async Task<bool> PopulatePackFromStream(Stream xmlPackStream) {
@@ -26,7 +30,7 @@ namespace TmfLib.Reader {
             bool packLoaded = false;
 
             try {
-                packDocument = await NanoXmlDocument.LoadFromXmlAsync(xmlPackContents);
+                packDocument = await NanoXmlDocument.LoadFromXmlAsync(xmlPackContents, this.PackReaderSettings);
                 packLoaded   = true;
             } catch (NanoXmlParsingException e) {
                 //Logger.Warn(e, $"Failed to successfully parse TacO overlay file.");

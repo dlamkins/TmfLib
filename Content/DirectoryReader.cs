@@ -47,12 +47,6 @@ namespace TmfLib.Content {
             return File.ReadAllBytes(Path.Combine(_directoryPath, filePath));
         }
 
-        public int GetFileBytes(string filePath, out byte[] fileBuffer) {
-            fileBuffer = GetFileBytes(filePath);
-
-            return fileBuffer?.Length ?? 0;
-        }
-
         public async Task<Stream> GetFileStreamAsync(string filePath) {
             return await Task.FromResult(this.GetFileStream(filePath));
         }

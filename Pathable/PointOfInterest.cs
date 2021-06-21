@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using TmfLib.Prototype;
+﻿using TmfLib.Prototype;
 
 namespace TmfLib.Pathable {
     public class PointOfInterest : IPointOfInterest {
@@ -28,14 +27,7 @@ namespace TmfLib.Pathable {
         private void Preprocess(PathingCategory rootPathingCategory) {
             // Assign ParentCategory
             if (this.TryGetAggregatedAttributeValue(PackConstImpl.XML_KNOWNATTRIBUTE_TYPE, out string categoryNamespace)) {
-                if (!rootPathingCategory.TryGetCategoryFromNamespace(categoryNamespace, out var category)) {
-                    // TODO: Warn that category referenced by the POI does not exist.
-                    // TODO: Review impact.  Consider when a marker is laoded before its category.
-
-                    return;
-                }
-                
-                this.ParentPathingCategory = category;
+                this.ParentPathingCategory = rootPathingCategory.GetOrAddCategoryFromNamespace(categoryNamespace);
                 this.ParentPathingCategory.AddPathable(this);
 
                 this.ExplicitAttributes.AddOrUpdateAttribute(new DynamicAttribute(PackConstImpl.XML_KNOWNATTRIBUTE_TYPE, this.ParentPathingCategory.GetNamespace));
