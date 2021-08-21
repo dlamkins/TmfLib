@@ -32,11 +32,13 @@
         }
 
         public static AttributeCollection GetAggregatedAttributes(this IAggregatesAttributes owner) {
-            var aggregateAttributes = new AttributeCollection(owner.ExplicitAttributes);
+            var aggregateAttributes = new AttributeCollection();
 
             if (owner.AttributeParent != null) {
                 aggregateAttributes.AddOrUpdateAttributes(owner.AttributeParent.GetAggregatedAttributes());
             }
+
+            aggregateAttributes.AddOrUpdateAttributes(owner.ExplicitAttributes);
 
             return aggregateAttributes;
         }

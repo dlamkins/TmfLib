@@ -80,7 +80,7 @@ namespace TmfLib.Builder {
             // Remove redundant attributes now kept track of by the pathable itself.
             categoryNode.Attributes.RemoveAll(attr => new[] {
                                                   MARKERCATEGORY_NAME_ATTR,
-                                                  MARKERCATEGORY_DISPLAYNAME_ATTR,
+                                                  //MARKERCATEGORY_DISPLAYNAME_ATTR,
                                                   MARKERCATEGORY_ISSEPARATOR_ATTR,
                                                   MARKERCATEGORY_DEFAULTTOGGLE_ATTR
                                               }.Contains(attr.Name));

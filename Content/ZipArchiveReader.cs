@@ -99,6 +99,27 @@ namespace TmfLib.Content {
             return null;
         }
 
+        public async Task<Stream> GetFileStreamAsync(string filePath) {
+            ZipArchiveEntry fileEntry;
+
+            if ((fileEntry = this.GetArchiveEntry(filePath)) != null) {
+                _exclusiveStreamAccessMutex.WaitOne();
+
+                var memStream = new MemoryStream();
+
+                using (var entryStream = fileEntry.Open()) {
+                    await entryStream.CopyToAsync(memStream);
+                }
+
+                memStream.Position = 0;
+
+                _exclusiveStreamAccessMutex.ReleaseMutex();
+                return memStream;
+            }
+
+            return null;
+        }
+
         public byte[] GetFileBytes(string filePath) {
             // We know GetFileStream returns a MemoryStream, so we don't check
             using (var fileStream = GetFileStream(filePath) as MemoryStream) {
@@ -110,12 +131,15 @@ namespace TmfLib.Content {
             return null;
         }
 
-        public async Task<Stream> GetFileStreamAsync(string filePath) {
-            return await Task.FromResult(GetFileStream(filePath));
-        }
-
         public async Task<byte[]> GetFileBytesAsync(string filePath) {
-            return await Task.FromResult(GetFileBytes(filePath));
+            // We know GetFileStream returns a MemoryStream, so we don't check
+            using (var fileStream = await GetFileStreamAsync(filePath) as MemoryStream) {
+                if (fileStream != null) {
+                    return fileStream.ToArray();
+                }
+            }
+
+            return null;
         }
 
         public void Dispose() {
