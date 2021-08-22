@@ -40,7 +40,7 @@ namespace TmfLib.Reader {
 
             if (packLoaded) {
                 TryLoadCategories(packDocument);
-                TryLoadPois(packDocument);
+                await TryLoadPois(packDocument);
             }
 
             return packLoaded;
@@ -54,14 +54,14 @@ namespace TmfLib.Reader {
             }
         }
 
-        private void TryLoadPois(NanoXmlDocument packDocument) {
+        private async Task TryLoadPois(NanoXmlDocument packDocument) {
             var poisNodes = packDocument.RootNode.SelectNodes(PackConstImpl.XML_ELEMENT_POIS);
 
             for (int j = 0; j < poisNodes.Length; j++) {
                 var poisNode = poisNodes[j];
 
                 for (int i = 0; i < poisNode.SubNodes.Count; i++) {
-                    var nPathable = Builder.PathablePrototypeBuilder.UnpackPathable(poisNode.SubNodes[i], _packResourceManager, _packCollection.Categories);
+                    var nPathable = await Builder.PathablePrototypeBuilder.UnpackPathableAsync(poisNode.SubNodes[i], _packResourceManager, _packCollection.Categories);
 
                     if (nPathable != null) {
                         _packCollection.PointsOfInterest.Add(nPathable);

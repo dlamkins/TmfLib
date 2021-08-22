@@ -20,9 +20,7 @@ namespace TmfLib {
 
         public async Task<byte[]> LoadResourceAsync(string resourcePath) {
             if (!_cachedResources.ContainsKey(resourcePath)) {
-                //var tempDataReader = this.DataReader.GetSubPath("");
-
-                var resource = this.DataReader.GetFileBytes(resourcePath);
+                var resource = await this.DataReader.GetFileBytesAsync(resourcePath);
 
                 _cachedResources.TryAdd(resourcePath, new PackResource(() => this.DataReader.GetFileBytes(resourcePath), resource));
             }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using NanoXml;
 using TmfLib.Pathable;
 using TmfLib.Reader;
@@ -7,22 +8,22 @@ using TmfLib.Reader;
 namespace TmfLib.Builder {
     public static class PathablePrototypeBuilder {
 
-        public static PointOfInterest UnpackPathable(NanoXmlNode pathableNode, IPackResourceManager pathableResourceManager, PathingCategory rootPathingCategory) {
+        public static async Task<PointOfInterest> UnpackPathableAsync(NanoXmlNode pathableNode, IPackResourceManager pathableResourceManager, PathingCategory rootPathingCategory) {
             return pathableNode.Name.ToLowerInvariant() switch {
-                PackConstImpl.XML_ELEMENT_POI => UnpackMarkerPoi(pathableNode, pathableResourceManager, rootPathingCategory),
-                PackConstImpl.XML_ELEMENT_TRAIL => UnpackTrailPoi(pathableNode, pathableResourceManager, rootPathingCategory),
-                PackConstImpl.XML_ELEMENT_ROUTE => UnpackRoutePoi(pathableNode, pathableResourceManager, rootPathingCategory),
-                _ => UnpackOtherPoi(pathableNode, pathableResourceManager, rootPathingCategory)
+                PackConstImpl.XML_ELEMENT_POI => await UnpackMarkerPoi(pathableNode, pathableResourceManager, rootPathingCategory),
+                PackConstImpl.XML_ELEMENT_TRAIL => await UnpackTrailPoi(pathableNode, pathableResourceManager, rootPathingCategory),
+                PackConstImpl.XML_ELEMENT_ROUTE => await UnpackRoutePoi(pathableNode, pathableResourceManager, rootPathingCategory),
+                _ => await UnpackOtherPoi(pathableNode, pathableResourceManager, rootPathingCategory)
             };
         }
 
-        private static PointOfInterest UnpackMarkerPoi(NanoXmlNode pathableNode, IPackResourceManager pathableResourceManager, PathingCategory rootPathingCategory) {
+        private static Task<PointOfInterest> UnpackMarkerPoi(NanoXmlNode pathableNode, IPackResourceManager pathableResourceManager, PathingCategory rootPathingCategory) {
             var poiAttributes = PathablePrototypeAttributeBuilder.FromNanoXmlNode(pathableNode);
 
-            return new PointOfInterest(pathableResourceManager, PointOfInterestType.Marker, poiAttributes, rootPathingCategory);
+            return Task.FromResult(new PointOfInterest(pathableResourceManager, PointOfInterestType.Marker, poiAttributes, rootPathingCategory));
         }
 
-        private static PointOfInterest UnpackTrailPoi(NanoXmlNode pathableNode, IPackResourceManager pathableResourceManager, PathingCategory rootPathingCategory) {
+        private static async Task<PointOfInterest> UnpackTrailPoi(NanoXmlNode pathableNode, IPackResourceManager pathableResourceManager, PathingCategory rootPathingCategory) {
             var trailAttributes = PathablePrototypeAttributeBuilder.FromNanoXmlNode(pathableNode);
 
             if (trailAttributes.Contains(PackConstImpl.XML_KNOWNATTRIBUTE_TRAILDATA)) {
@@ -30,7 +31,7 @@ namespace TmfLib.Builder {
                 string trlFile = trailAttributes[PackConstImpl.XML_KNOWNATTRIBUTE_TRAILDATA].Value;
 
                 if (pathableResourceManager.ResourceExists(trlFile)) {
-                    var trlStream = pathableResourceManager.LoadResource(trlFile);
+                    var trlStream = await pathableResourceManager.LoadResourceAsync(trlFile);
 
                     var firstSegment = TrlFileReader.GetTrailSegments(trlStream).First();
 
@@ -49,13 +50,13 @@ namespace TmfLib.Builder {
             return null;
         }
 
-        private static PointOfInterest UnpackRoutePoi(NanoXmlNode pathableNode, IPackResourceManager pathableResourceManager, PathingCategory rootPathingCategory) {
+        private static async Task<PointOfInterest> UnpackRoutePoi(NanoXmlNode pathableNode, IPackResourceManager pathableResourceManager, PathingCategory rootPathingCategory) {
             // TODO: Log deprecated route type
             // TODO: Implement route POI type
             return null;
         }
 
-        private static PointOfInterest UnpackOtherPoi(NanoXmlNode pathableNode, IPackResourceManager pathableResourceManager, PathingCategory rootPathingCategory) {
+        private static async Task<PointOfInterest> UnpackOtherPoi(NanoXmlNode pathableNode, IPackResourceManager pathableResourceManager, PathingCategory rootPathingCategory) {
             // TODO: Log unexpected element type passed to pathable builder
             return null;
         }

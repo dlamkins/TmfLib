@@ -18,8 +18,8 @@
         public static string GetAggregatedAttributeValue(this IAggregatesAttributes owner, string attributeName) {
             if (owner.ExplicitAttributes.Contains(attributeName)) {
                 return owner.ExplicitAttributes[attributeName].Value;
-            } else if (owner.AttributeParent?.ExplicitAttributes.Contains(attributeName) ?? false) {
-                return owner.AttributeParent.ExplicitAttributes[attributeName].Value;
+            } else if (owner.AttributeParent != null) {
+                return owner.AttributeParent.GetAggregatedAttributeValue(attributeName);
             }
 
             return null;
