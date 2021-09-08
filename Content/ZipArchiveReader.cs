@@ -50,6 +50,8 @@ namespace TmfLib.Content {
 
         public Task<byte[]> GetFileBytesAsync(string filePath) => _archive.GetFileBytesAsync(filePath);
 
+        public void AttemptReleaseLocks() => _archive.AttemptReleaseLocks();
+        
         public void Dispose() {
             // TODO: Allow dispose on AsyncZipArchive
         }

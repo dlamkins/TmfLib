@@ -75,6 +75,8 @@ namespace TmfLib.Content {
         /// </returns>
         Task<byte[]> GetFileBytesAsync(string filePath);
 
+        void AttemptReleaseLocks();
+
     }
 
 }

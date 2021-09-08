@@ -42,7 +42,6 @@ namespace TmfLib.Content {
             return _entryLookup.TryGetValue(GetUniformFilePath(filePath), out int index)
                        ? archive.Entries[index]
                        : null;
-
         }
 
         private ZipArchive GetArchive() {
@@ -125,6 +124,12 @@ namespace TmfLib.Content {
             }
 
             return null;
+        }
+
+        public void AttemptReleaseLocks() {
+            while (_availableArchives.TryTake(out var archive)) {
+                archive.Dispose();
+            }
         }
 
     }

@@ -64,6 +64,8 @@ namespace TmfLib.Content {
             return fileData;
         }
 
+        public void AttemptReleaseLocks() { /* NOOP */ }
+
         public void Dispose() { /* NOOP */ }
 
     }
