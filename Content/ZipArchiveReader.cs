@@ -29,14 +29,12 @@ namespace TmfLib.Content {
             return $"{_archivePath}[{Path.GetFileName(Path.Combine(_subPath, relativeFilePath ?? string.Empty))}]";
         }
         
-        public void LoadOnFileType(Action<Stream, IDataReader> loadFileFunc, string fileExtension = "", IProgress<string> progress = null) {
+        public async Task LoadOnFileTypeAsync(Func<Stream, IDataReader, Task> loadFileFunc, string fileExtension = "", IProgress<string> progress = null) {
             var validEntries = _archive.Entries.Where(e => e.EndsWith(fileExtension.ToLowerInvariant())).ToList();
 
             foreach (var entry in validEntries) {
                 progress?.Report($"Loading {entry}...");
-                var entryStream = GetFileStream(entry);
-
-                loadFileFunc.Invoke(entryStream, this);
+                await loadFileFunc.Invoke(await this.GetFileStreamAsync(entry), this);
             }
         }
 

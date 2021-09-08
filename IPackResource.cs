@@ -1,7 +1,9 @@
-﻿namespace TmfLib {
+﻿using System.Threading.Tasks;
+
+namespace TmfLib {
     public interface IPackResource {
 
-        byte[] Data { get; }
+        Task<byte[]> GetDataAsync();
 
     }
 }

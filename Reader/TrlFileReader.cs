@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -11,7 +10,7 @@ namespace TmfLib.Reader {
 
         public static IEnumerable<ITrailSection> GetTrailSegments(byte[] trlData) {
             var trlDataStream = new MemoryStream(trlData);
-            var trlReader = new BinaryReader(trlDataStream, Encoding.ASCII);
+            var trlReader     = new BinaryReader(trlDataStream, Encoding.ASCII);
 
             // If at end of stream, or if stream is 0 length, give up
             if (trlReader.PeekChar() == -1) yield break;

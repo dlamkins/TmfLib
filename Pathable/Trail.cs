@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Threading.Tasks;
 using TmfLib.Prototype;
 using TmfLib.Reader;
 
@@ -11,14 +12,20 @@ namespace TmfLib.Pathable {
 
         public IEnumerable<Vector3> TrailPoints => this.TrailSections.SelectMany(s => s.TrailPoints);
 
-        public Trail(IPackResourceManager resourceManager, AttributeCollection explicitAttributes, PathingCategory rootPathingCategory) : base(resourceManager, PointOfInterestType.Trail, explicitAttributes, rootPathingCategory) {
-            Preprocess(rootPathingCategory);
+        private Trail(IPackResourceManager resourceManager, AttributeCollection explicitAttributes, PathingCategory rootPathingCategory)
+            : base(resourceManager, PointOfInterestType.Trail, explicitAttributes, rootPathingCategory) { /* NOOP */ }
+
+        public static async Task<Trail> Build(IPackResourceManager resourceManager, AttributeCollection explicitAttributes, PathingCategory rootPathingCategory) {
+            var newTrail = new Trail(resourceManager, explicitAttributes, rootPathingCategory);
+            await newTrail.Preprocess(rootPathingCategory);
+
+            return newTrail;
         }
 
-        private void Preprocess(PathingCategory rootPathingCategory) {
+        private async Task Preprocess(PathingCategory rootPathingCategory) {
             // Load trail data
             if (this.TryGetAggregatedAttributeValue(PackConstImpl.XML_KNOWNATTRIBUTE_TRAILDATA, out string trlFilePath)) {
-                this.TrailSections = TrlFileReader.GetTrailSegments(this.ResourceManager.LoadResource(trlFilePath));
+                this.TrailSections = TrlFileReader.GetTrailSegments(await this.ResourceManager.LoadResourceAsync(trlFilePath));
             }
         }
 

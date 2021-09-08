@@ -33,11 +33,16 @@ namespace TmfLib.Builder {
                 if (pathableResourceManager.ResourceExists(trlFile)) {
                     var trlStream = await pathableResourceManager.LoadResourceAsync(trlFile);
 
-                    var firstSegment = TrlFileReader.GetTrailSegments(trlStream).First();
+                    var firstSegment = TrlFileReader.GetTrailSegments(trlStream).FirstOrDefault();
+
+                    if (firstSegment == null) {
+                        // Oops
+                        return null;
+                    }
 
                     trailAttributes.AddOrUpdateAttribute(new Prototype.Attribute(PackConstImpl.XML_KNOWNATTRIBUTE_MAPID, firstSegment.MapId.ToString()));
 
-                    return new Trail(pathableResourceManager, trailAttributes, rootPathingCategory);
+                    return await Trail.Build(pathableResourceManager, trailAttributes, rootPathingCategory);
                 } else {
                     // TODO: Log referenced trail file does not exist
                     Console.WriteLine("Log referenced trail file does not exist");

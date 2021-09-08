@@ -1,21 +1,21 @@
 ﻿using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace TmfLib {
     public class PackResource : IPackResource {
 
-        private readonly Func<byte[]>          _refreshData;
+        private readonly Func<Task<byte[]>>    _refreshData;
         private readonly WeakReference<byte[]> _dataReference;
 
-        public byte[] Data => GetData();
-
-        public PackResource(Func<byte[]> refreshData, byte[] data) {
+        public PackResource(Func<Task<byte[]>> refreshData) {
             _refreshData   = refreshData;
-            _dataReference = new WeakReference<byte[]>(data);
+            _dataReference = new WeakReference<byte[]>(null);
         }
 
-        private byte[] GetData() {
+        public async Task<byte[]> GetDataAsync() {
             if (!_dataReference.TryGetTarget(out byte[] data)) {
-                data = _refreshData();
+                data = await _refreshData();
                 _dataReference.SetTarget(data);
             }
 

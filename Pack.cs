@@ -9,7 +9,7 @@ namespace TmfLib {
 
         private readonly IDataReader _dataReader;
 
-        public string Name => _dataReader.GetPathRepresentation();
+        public string Name => Path.GetFileNameWithoutExtension(_dataReader.GetPathRepresentation());
 
         /// <summary>
         /// Indicates that the marker pack has been optimized for loading by this library.
@@ -26,6 +26,8 @@ namespace TmfLib {
             this.ResourceManager = new PackResourceManager(dataReader);
         }
 
+        public static Pack FromIDataReader(IDataReader dataReader) => new Pack(dataReader);
+
         public static Pack FromArchivedMarkerPack(string archivePath) => new Pack(new ZipArchiveReader(archivePath));
 
         public static Pack FromDirectoryMarkerPack(string directoryPath) => new Pack(new DirectoryReader(directoryPath));
@@ -37,8 +39,9 @@ namespace TmfLib {
 
             var candidates = new List<(Stream fileStream, IDataReader dataReader)>();
 
-            _dataReader.LoadOnFileType((fileStream, dataReader) => {
+            await _dataReader.LoadOnFileTypeAsync((fileStream, dataReader) => {
                 candidates.Add((fileStream, dataReader));
+                return Task.CompletedTask;
             }, ".xml");
 
             foreach (var candidate in candidates) {

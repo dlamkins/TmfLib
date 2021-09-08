@@ -24,10 +24,10 @@ namespace TmfLib.Content {
             return Path.Combine(_directoryPath, relativeFilePath ?? "");
         }
 
-        public void LoadOnFileType(Action<Stream, IDataReader> loadFileFunc, string fileExtension = "", IProgress<string> progress = null) {
+        public async Task LoadOnFileTypeAsync(Func<Stream, IDataReader, Task> loadFileFunc, string fileExtension = "", IProgress<string> progress = null) {
             foreach (string filePath in Directory.EnumerateFiles(_directoryPath, $"*{fileExtension}", SearchOption.AllDirectories)) {
                 progress?.Report($"Loading {Path.GetFileName(filePath)}");
-                loadFileFunc.Invoke(this.GetFileStream(filePath), this);
+                await loadFileFunc.Invoke(await this.GetFileStreamAsync(filePath), this);
             }
         }
 

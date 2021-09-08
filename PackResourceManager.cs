@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TmfLib.Content;
 
@@ -20,22 +21,16 @@ namespace TmfLib {
 
         public async Task<byte[]> LoadResourceAsync(string resourcePath) {
             if (!_cachedResources.ContainsKey(resourcePath)) {
-                var resource = await this.DataReader.GetFileBytesAsync(resourcePath);
-
-                _cachedResources.TryAdd(resourcePath, new PackResource(() => this.DataReader.GetFileBytes(resourcePath), resource));
+                _cachedResources.TryAdd(resourcePath, new PackResource(async () => await this.DataReader.GetFileBytesAsync(resourcePath)));
             }
-
-            return _cachedResources[resourcePath].Data;
+            
+            return await _cachedResources[resourcePath].GetDataAsync();
         }
 
-        public byte[] LoadResource(string resourcePath) {
-            if (!_cachedResources.ContainsKey(resourcePath)) {
-                var resource = this.DataReader.GetFileBytes(resourcePath);
-
-                _cachedResources.TryAdd(resourcePath, new PackResource(() => this.DataReader.GetFileBytes(resourcePath), resource));
+        public async Task PreloadResourcesAsync(IEnumerable<string> resourcePaths) {
+            foreach (string resourcePath in resourcePaths) {
+                _ = await LoadResourceAsync(resourcePath);
             }
-
-            return _cachedResources[resourcePath].Data;
         }
 
     }
