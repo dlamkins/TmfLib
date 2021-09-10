@@ -5,7 +5,7 @@ using System.Linq;
 using TmfLib.Prototype;
 
 namespace TmfLib.Pathable {
-    public class PathingCategory : KeyedCollection<string, PathingCategory>, IAggregatesAttributes {
+    public class PathingCategory : KeyedCollection<string, ICategory>, ICategory {
 
         private const bool DEFAULT_ISSEPARATOR   = false;
         private const bool DEFAULT_DEFAULTTOGGLE = true;
@@ -16,8 +16,8 @@ namespace TmfLib.Pathable {
 
         public string Name { get; set; }
 
-        private PathingCategory _parent;
-        public PathingCategory Parent {
+        private ICategory _parent;
+        public ICategory Parent {
             get => _parent;
             set {
                 if (_parent == value) return;
@@ -31,11 +31,6 @@ namespace TmfLib.Pathable {
             }
         }
 
-        private string _cachedNamespace = null;
-
-        /// <summary>
-        /// Indicates that the category is the root node (which contains all categories loaded for a pack).
-        /// </summary>
         public bool Root { get; }
 
         public  string DisplayName { get; set; } = string.Empty;
@@ -44,7 +39,12 @@ namespace TmfLib.Pathable {
 
         public bool DefaultToggle { get; set; } = DEFAULT_DEFAULTTOGGLE;
 
-        public SynchronizedCollection<PointOfInterest> Pathables { get; } = new();
+        private readonly SynchronizedCollection<PointOfInterest> _pathables = new();
+        public           IReadOnlyCollection<PointOfInterest>    Pathables => new ReadOnlyCollection<PointOfInterest>(_pathables);
+
+
+        private string _cachedNamespace = null;
+        public  string Namespace => GetNamespace();
 
         public PathingCategory(string name) : base(StringComparer.OrdinalIgnoreCase) {
             this.Name = name;
@@ -55,41 +55,40 @@ namespace TmfLib.Pathable {
         }
 
         // TODO: Review cache invalidation - it doesn't bubble down, so can become invalid if an ancestor changes its parent.
-        public string GetNamespace() => _cachedNamespace ??= string.Join(".", this.GetParentsDesc().Select(c => c.Name));
-
-        /// <summary>
-        /// Enumerates the category in ascending order up to its highest level parent.
-        /// </summary>
-        public IEnumerable<PathingCategory> GetParents() {
-            var parentCategory = this;
+        private string GetNamespace() => _cachedNamespace ??= string.Join(".", this.GetParentsDesc().Select(c => c.Name));
+        
+        public IEnumerable<ICategory> GetParents() {
+            ICategory parentCategory = this;
 
             do {
                 yield return parentCategory;
             } while ((parentCategory = parentCategory.Parent) != null && (!parentCategory.Root));
         }
 
-        /// <summary>
-        /// Enumerates the category in descending order up to its highest level parent.
-        /// </summary>
-        public IEnumerable<PathingCategory> GetParentsDesc() {
+        
+        public IEnumerable<ICategory> GetParentsDesc() {
             return this.GetParents().Reverse();
         }
 
         public void AddPathable(PointOfInterest pathable) {
-            this.Pathables.Add(pathable);
+            _pathables.Add(pathable);
+        }
+
+        public void ClearPathables() {
+            _pathables.Clear();
         }
 
         public void SetAttributes(AttributeCollection attributes) {
             this.ExplicitAttributes.AddOrUpdateAttributes(attributes);
         }
 
-        public PathingCategory GetOrAddCategoryFromNamespace(string @namespace) {
+        public ICategory GetOrAddCategoryFromNamespace(string @namespace) {
             if (@namespace == null) throw new ArgumentNullException(nameof(@namespace));
 
             return InternalGetOrAddCategoryFromNamespace(@namespace, true);
         }
 
-        public bool TryGetCategoryFromNamespace(string @namespace, out PathingCategory category) {
+        public bool TryGetCategoryFromNamespace(string @namespace, out ICategory category) {
             if (@namespace == null) throw new ArgumentNullException(nameof(@namespace));
 
             return (category = InternalGetOrAddCategoryFromNamespace(@namespace, false)) != null;
@@ -113,8 +112,10 @@ namespace TmfLib.Pathable {
                 }
             } else {
                 // Subcategory was already defined.
-                targetPathingCategory = this[segmentValue];
+                targetPathingCategory = this[segmentValue] as PathingCategory;
             }
+
+            if (targetPathingCategory == null) return null;
 
             return namespaceSegments.Any()
                        // Not at end of namespace - continue drilling.
@@ -123,7 +124,7 @@ namespace TmfLib.Pathable {
                        : targetPathingCategory;
         }
 
-        protected override string GetKeyForItem(PathingCategory category) {
+        protected override string GetKeyForItem(ICategory category) {
             return category.Name;
         }
 
