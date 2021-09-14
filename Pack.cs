@@ -32,6 +32,10 @@ namespace TmfLib {
 
         public static Pack FromDirectoryMarkerPack(string directoryPath) => new Pack(new DirectoryReader(directoryPath));
 
+        public void ReleaseLocks() {
+            _dataReader.AttemptReleaseLocks();
+        }
+
         public async Task<IPackCollection> LoadAllAsync(IPackCollection packCollection = null, PackReaderSettings packReaderSettings = null) {
             var collection = packCollection ?? new PackCollection();
 

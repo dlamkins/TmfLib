@@ -45,11 +45,9 @@ namespace TmfLib.Builder {
                     return await Trail.Build(pathableResourceManager, trailAttributes, rootPathingCategory);
                 } else {
                     // TODO: Log referenced trail file does not exist
-                    Console.WriteLine("Log referenced trail file does not exist");
                 }
             } else {
                 // TODO: Log trail failed to get trl data
-                Console.WriteLine("Log trail failed to get trl data");
             }
 
             return null;

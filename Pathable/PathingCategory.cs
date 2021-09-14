@@ -5,7 +5,7 @@ using System.Linq;
 using TmfLib.Prototype;
 
 namespace TmfLib.Pathable {
-    public class PathingCategory : KeyedCollection<string, ICategory>, ICategory {
+    public class PathingCategory : KeyedCollection<string, PathingCategory>, IAggregatesAttributes {
 
         private const bool DEFAULT_ISSEPARATOR   = false;
         private const bool DEFAULT_DEFAULTTOGGLE = true;
@@ -14,10 +14,16 @@ namespace TmfLib.Pathable {
 
         IAggregatesAttributes IAggregatesAttributes.AttributeParent => Parent;
 
+        /// <summary>
+        /// The name of the category.
+        /// </summary>
         public string Name { get; set; }
 
-        private ICategory _parent;
-        public ICategory Parent {
+        private PathingCategory _parent;
+        /// <summary>
+        /// The category's parent category.
+        /// </summary>
+        public PathingCategory Parent {
             get => _parent;
             set {
                 if (_parent == value) return;
@@ -27,24 +33,35 @@ namespace TmfLib.Pathable {
                 _parent = value;
                 _parent?.Add(this);
 
-                _cachedNamespace = null;
+                SpoilNamespaceCache();
             }
         }
-
+        
+        /// <summary>
+        /// Indicates that the category is the root node (which contains all categories loaded for a pack).
+        /// </summary>
         public bool Root { get; }
-
-        public  string DisplayName { get; set; } = string.Empty;
-
+        
+        /// <summary>
+        /// The display name of the category displayed within the UI.
+        /// </summary>
+        public string DisplayName { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// If the category is used to display a header for other categories.
+        /// </summary>
         public bool IsSeparator { get; set; } = DEFAULT_ISSEPARATOR;
 
+        /// <summary>
+        /// If the category should be enabled by default.
+        /// </summary>
         public bool DefaultToggle { get; set; } = DEFAULT_DEFAULTTOGGLE;
 
-        private readonly SynchronizedCollection<PointOfInterest> _pathables = new();
-        public           IReadOnlyCollection<PointOfInterest>    Pathables => new ReadOnlyCollection<PointOfInterest>(_pathables);
-
-
         private string _cachedNamespace = null;
-        public  string Namespace => GetNamespace();
+        /// <summary>
+        /// The full namespace that this category is within.
+        /// </summary>
+        public string Namespace => GetNamespace();
 
         public PathingCategory(string name) : base(StringComparer.OrdinalIgnoreCase) {
             this.Name = name;
@@ -53,42 +70,48 @@ namespace TmfLib.Pathable {
         public PathingCategory(bool root = false) {
             this.Root = root;
         }
-
-        // TODO: Review cache invalidation - it doesn't bubble down, so can become invalid if an ancestor changes its parent.
-        private string GetNamespace() => _cachedNamespace ??= string.Join(".", this.GetParentsDesc().Select(c => c.Name));
         
-        public IEnumerable<ICategory> GetParents() {
-            ICategory parentCategory = this;
+        private string GetNamespace() {
+            return _cachedNamespace ??= string.Join(".", GetParentsDesc().Select(c => c.Name));
+        }
+
+        private void SpoilNamespaceCache() {
+            _cachedNamespace = null;
+
+            foreach (var category in this) {
+                category.SpoilNamespaceCache();
+            } 
+        }
+
+        /// <summary>
+        /// Enumerates the category in ascending order up to its highest level parent.
+        /// </summary>
+        public IEnumerable<PathingCategory> GetParents() {
+            var parentCategory = this;
 
             do {
                 yield return parentCategory;
             } while ((parentCategory = parentCategory.Parent) != null && (!parentCategory.Root));
         }
-
         
-        public IEnumerable<ICategory> GetParentsDesc() {
-            return this.GetParents().Reverse();
-        }
-
-        public void AddPathable(PointOfInterest pathable) {
-            _pathables.Add(pathable);
-        }
-
-        public void ClearPathables() {
-            _pathables.Clear();
+        /// <summary>
+        /// Enumerates the category in descending order up to its highest level parent.
+        /// </summary>
+        public IEnumerable<PathingCategory> GetParentsDesc() {
+            return GetParents().Reverse();
         }
 
         public void SetAttributes(AttributeCollection attributes) {
             this.ExplicitAttributes.AddOrUpdateAttributes(attributes);
         }
 
-        public ICategory GetOrAddCategoryFromNamespace(string @namespace) {
+        public PathingCategory GetOrAddCategoryFromNamespace(string @namespace) {
             if (@namespace == null) throw new ArgumentNullException(nameof(@namespace));
 
             return InternalGetOrAddCategoryFromNamespace(@namespace, true);
         }
 
-        public bool TryGetCategoryFromNamespace(string @namespace, out ICategory category) {
+        public bool TryGetCategoryFromNamespace(string @namespace, out PathingCategory category) {
             if (@namespace == null) throw new ArgumentNullException(nameof(@namespace));
 
             return (category = InternalGetOrAddCategoryFromNamespace(@namespace, false)) != null;
@@ -112,10 +135,8 @@ namespace TmfLib.Pathable {
                 }
             } else {
                 // Subcategory was already defined.
-                targetPathingCategory = this[segmentValue] as PathingCategory;
+                targetPathingCategory = this[segmentValue];
             }
-
-            if (targetPathingCategory == null) return null;
 
             return namespaceSegments.Any()
                        // Not at end of namespace - continue drilling.
@@ -124,7 +145,7 @@ namespace TmfLib.Pathable {
                        : targetPathingCategory;
         }
 
-        protected override string GetKeyForItem(ICategory category) {
+        protected override string GetKeyForItem(PathingCategory category) {
             return category.Name;
         }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TmfLib.Content {
@@ -9,6 +10,8 @@ namespace TmfLib.Content {
 
         private readonly ConcurrentBag<ZipArchive> _availableArchives = new();
         private readonly Dictionary<string, int>   _entryLookup       = new();
+
+        private int _generation = 0;
 
         private readonly string _archivePath;
 
@@ -21,13 +24,13 @@ namespace TmfLib.Content {
         }
 
         private void InitMetadata() {
-            var archive = GetArchive();
+            var (archive, generation) = GetArchive();
 
             for (int i = 0; i < archive.Entries.Count; i++) {
                 _entryLookup.Add(GetUniformFilePath(archive.Entries[i].FullName), i);
             }
 
-            ReturnArchive(archive);
+            ReturnArchive(archive, generation);
         }
 
         private string GetUniformFilePath(string filePath) {
@@ -44,20 +47,22 @@ namespace TmfLib.Content {
                        : null;
         }
 
-        private ZipArchive GetArchive() {
-            if (_availableArchives.TryTake(out var archive)) {
-                return archive;
-            }
-
-            return ZipFile.OpenRead(_archivePath);
+        private (ZipArchive ZipArchive, int Generation) GetArchive() {
+            return _availableArchives.TryTake(out var archive)
+                       ? (archive, _generation)
+                       : (ZipFile.OpenRead(_archivePath), _generation);
         }
 
-        private void ReturnArchive(ZipArchive archvie) {
-            _availableArchives.Add(archvie);
+        private void ReturnArchive(ZipArchive archive, int generation) {
+            if (generation == _generation) {
+                _availableArchives.Add(archive);
+            } else {
+                archive.Dispose();
+            }
         }
 
         public async Task<Stream> GetFileStreamAsync(string filePath) {
-            var archive = GetArchive();
+            var (archive, generation) = GetArchive();
 
             try {
                 ZipArchiveEntry fileEntry;
@@ -74,14 +79,14 @@ namespace TmfLib.Content {
                     return memStream;
                 }
             } finally {
-                ReturnArchive(archive);
+                ReturnArchive(archive, generation);
             }
 
             return null;
         }
 
         public Stream GetFileStream(string filePath) {
-            var archive = GetArchive();
+            var (archive, generation) = GetArchive();
 
             try {
                 ZipArchiveEntry fileEntry;
@@ -98,7 +103,7 @@ namespace TmfLib.Content {
                     return memStream;
                 }
             } finally {
-                ReturnArchive(archive);
+                ReturnArchive(archive, generation);
             }
 
             return null;
@@ -127,6 +132,8 @@ namespace TmfLib.Content {
         }
 
         public void AttemptReleaseLocks() {
+            Interlocked.Increment(ref _generation);
+
             while (_availableArchives.TryTake(out var archive)) {
                 archive.Dispose();
             }

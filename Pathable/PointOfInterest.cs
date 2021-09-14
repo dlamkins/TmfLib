@@ -28,9 +28,8 @@ namespace TmfLib.Pathable {
             // Assign ParentCategory
             if (this.TryGetAggregatedAttributeValue(PackConstImpl.XML_KNOWNATTRIBUTE_TYPE, out string categoryNamespace)) {
                 this.ParentPathingCategory = rootPathingCategory.GetOrAddCategoryFromNamespace(categoryNamespace);
-                this.ParentPathingCategory.AddPathable(this);
-
-                this.ExplicitAttributes.AddOrUpdateAttribute(new DynamicAttribute(PackConstImpl.XML_KNOWNATTRIBUTE_TYPE, this.ParentPathingCategory.GetNamespace));
+                
+                this.ExplicitAttributes.AddOrUpdateAttribute(new DynamicAttribute(PackConstImpl.XML_KNOWNATTRIBUTE_TYPE, () => this.ParentPathingCategory.Namespace));
             }
 
             // Assign MapId

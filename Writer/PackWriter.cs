@@ -39,7 +39,7 @@ namespace TmfLib.Writer {
             // Get pathables by map ID
             var groupedPathables = packCollection.PointsOfInterest
                                        .Where(poi => poi.ParentPathingCategory != null && !ShouldIgnorePathableType(poi))
-                                       .OrderBy(poi => poi.ParentPathingCategory.GetNamespace())
+                                       .OrderBy(poi => poi.ParentPathingCategory.Namespace)
                                        .GroupBy(poi => poi.MapId);
 
             // Export each set of pathables per map
@@ -196,7 +196,7 @@ namespace TmfLib.Writer {
 
             pathableWriter.WriteStartElement(pathable.Type == PointOfInterestType.Marker ? PackConstImpl.XML_ELEMENT_POI : PackConstImpl.XML_ELEMENT_TRAIL);
 
-            pathableWriter.WriteAttributeString(PackConstImpl.XML_KNOWNATTRIBUTE_TYPE, pathable.ParentPathingCategory?.GetNamespace() ?? "unspecified");
+            pathableWriter.WriteAttributeString(PackConstImpl.XML_KNOWNATTRIBUTE_TYPE, pathable.ParentPathingCategory?.Namespace ?? "unspecified");
 
             foreach (var attribute in pathable.ExplicitAttributes) {
                 if (this.PackWriterSettings.SkipMapId && attribute.Name == PackConstImpl.XML_KNOWNATTRIBUTE_MAPID) continue;
