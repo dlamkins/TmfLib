@@ -14,6 +14,10 @@ namespace TmfLib.Prototype {
             }
         }
 
+        public void AddOrUpdateAttribute(string attributeName, string attributeValue) {
+            AddOrUpdateAttribute(new Attribute(attributeName, attributeValue));
+        }
+
         public void AddOrUpdateAttribute(IAttribute attribute) {
             this.Remove(attribute.Name); // Prevent duplicates and force updates
             this.Add(attribute);

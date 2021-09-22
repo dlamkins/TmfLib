@@ -37,7 +37,7 @@ namespace TmfLib.Builder {
 
             if (name == null) return string.Empty;
 
-            var validName = new StringBuilder(name);
+            var validName = new StringBuilder(name.ToLowerInvariant());
 
             for (int i = 0; i < validName.Length; i++) {
                 if (char.IsLetterOrDigit(validName[i]) || validName[i] == '.') continue;

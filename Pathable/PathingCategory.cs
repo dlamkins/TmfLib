@@ -41,11 +41,16 @@ namespace TmfLib.Pathable {
         /// Indicates that the category is the root node (which contains all categories loaded for a pack).
         /// </summary>
         public bool Root { get; }
-        
+
+        private string _displayName = null;
+
         /// <summary>
         /// The display name of the category displayed within the UI.
         /// </summary>
-        public string DisplayName { get; set; } = string.Empty;
+        public string DisplayName {
+            get => _displayName ?? this.Name;
+            set => _displayName = value;
+        }
         
         /// <summary>
         /// If the category is used to display a header for other categories.
