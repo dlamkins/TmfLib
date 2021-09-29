@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Text;
 using NanoXml;
 using TmfLib.Pathable;
 
@@ -29,31 +28,8 @@ namespace TmfLib.Builder {
             }
         }
 
-        private static string GetTacOSafeName(string name) {
-            // TacO documentation states: Must not contain any spaces or special characters.
-            // http://www.gw2taco.com/2016/01/how-to-create-your-own-marker-pack.html
-            // Actual TacO behavior: Anything other than a letter, number, or period is converted to an underscore.
-            // REF: https://github.com/blish-hud/Community-Module-Pack/issues/59
-
-            if (name == null) return string.Empty;
-
-            var validName = new StringBuilder(name.ToLowerInvariant());
-
-            for (int i = 0; i < validName.Length; i++) {
-                if (char.IsLetterOrDigit(validName[i]) || validName[i] == '.') continue;
-
-                validName[i] = '_';
-            }
-
-            //if (name != validName.ToString()) {
-            // TODO: Log invalid namespace characters detected
-            //}
-
-            return validName.ToString();
-        }
-
         public static PathingCategory FromNanoXmlNode(NanoXmlNode categoryNode, PathingCategory parent) {
-            string categoryName = GetTacOSafeName(categoryNode.GetAttribute(MARKERCATEGORY_NAME_ATTR)?.Value);
+            string categoryName = categoryNode.GetAttribute(MARKERCATEGORY_NAME_ATTR)?.Value;
 
             // Can't define a marker category without a name.
             if (string.IsNullOrEmpty(categoryName)) {
@@ -66,6 +42,8 @@ namespace TmfLib.Builder {
                                    ? parent[categoryName]
                                    // We're adding a new category.
                                    : parent.GetOrAddCategoryFromNamespace(categoryName);
+
+            subjCategory.LoadedFromPack = true;
 
             // Have to ensure we only override if the attributes exist in case we're overwriting an existing category.
             if (categoryNode.TryGetAttribute(MARKERCATEGORY_DISPLAYNAME_ATTR, out var displayNameAttr))

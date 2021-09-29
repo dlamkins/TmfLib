@@ -1,7 +1,7 @@
-﻿using System.IO;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace TmfLib {
+
     public interface IPackResourceManager {
 
         bool ResourceExists(string resourcePath);
@@ -9,4 +9,5 @@ namespace TmfLib {
         Task<byte[]> LoadResourceAsync(string resourcePath);
 
     }
+
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text;
 using TmfLib.Prototype;
 
 namespace TmfLib.Pathable {
@@ -14,10 +15,22 @@ namespace TmfLib.Pathable {
 
         IAggregatesAttributes IAggregatesAttributes.AttributeParent => Parent;
 
+        private string _name;
         /// <summary>
         /// The name of the category.
         /// </summary>
-        public string Name { get; set; }
+        public string Name {
+            get => _name;
+            set {
+                string safeName = GetTacOSafeName(value);
+
+                if (string.Equals(_name, safeName, StringComparison.InvariantCultureIgnoreCase)) return;
+
+                _name = safeName;
+
+                SpoilNamespaceCache();
+            }
+        }
 
         private PathingCategory _parent;
         /// <summary>
@@ -42,8 +55,12 @@ namespace TmfLib.Pathable {
         /// </summary>
         public bool Root { get; }
 
-        private string _displayName = null;
+        /// <summary>
+        /// Indicates that the category was loaded by a pack.
+        /// </summary>
+        public bool LoadedFromPack { get; set; }
 
+        private string _displayName = null;
         /// <summary>
         /// The display name of the category displayed within the UI.
         /// </summary>
@@ -51,7 +68,7 @@ namespace TmfLib.Pathable {
             get => _displayName ?? this.Name;
             set => _displayName = value;
         }
-        
+
         /// <summary>
         /// If the category is used to display a header for other categories.
         /// </summary>
@@ -72,7 +89,7 @@ namespace TmfLib.Pathable {
             this.Name = name;
         }
 
-        public PathingCategory(bool root = false) {
+        public PathingCategory(bool root = false) : base(StringComparer.OrdinalIgnoreCase) {
             this.Root = root;
         }
         
@@ -86,6 +103,29 @@ namespace TmfLib.Pathable {
             foreach (var category in this) {
                 category.SpoilNamespaceCache();
             } 
+        }
+        private static string GetTacOSafeName(string name) {
+            // TacO documentation states: Must not contain any spaces or special characters.
+            // http://www.gw2taco.com/2016/01/how-to-create-your-own-marker-pack.html
+            // Actual TacO behavior: Anything other than a letter, number, or period is converted to an underscore.
+            // REF: https://github.com/blish-hud/Community-Module-Pack/issues/59
+
+            if (name == null) return string.Empty;
+
+            var validName = new StringBuilder(name);
+
+            for (int i = 0; i < validName.Length; i++) {
+                if (char.IsLetterOrDigit(validName[i]))
+                    continue;
+
+                validName[i] = '_';
+            }
+
+            //if (name != validName.ToString()) {
+            // TODO: Log invalid namespace characters detected
+            //}
+
+            return validName.ToString();
         }
 
         /// <summary>
