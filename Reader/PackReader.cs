@@ -47,19 +47,13 @@ namespace TmfLib.Reader {
         }
 
         private void TryLoadCategories(NanoXmlDocument packDocument) {
-            var categoryNodes = packDocument.RootNode.SelectNodes(PackConstImpl.XML_ELEMENT_MARKERCATEGORY);
-
-            for (int i = 0; i < categoryNodes.Length; i++) {
-                Builder.PathableCategoryBuilder.UnpackCategory(categoryNodes[i], _packCollection.Categories);
+            foreach (var categoryNode in packDocument.RootNode.SelectNodes(PackConstImpl.XML_ELEMENT_MARKERCATEGORY)) {
+                Builder.PathableCategoryBuilder.UnpackCategory(categoryNode, _packCollection.Categories);
             }
         }
 
         private async Task TryLoadPois(NanoXmlDocument packDocument) {
-            var poisNodes = packDocument.RootNode.SelectNodes(PackConstImpl.XML_ELEMENT_POIS);
-
-            for (int j = 0; j < poisNodes.Length; j++) {
-                var poisNode = poisNodes[j];
-
+            foreach (var poisNode in packDocument.RootNode.SelectNodes(PackConstImpl.XML_ELEMENT_POIS)) {
                 for (int i = 0; i < poisNode.SubNodes.Count; i++) {
                     var nPathable = await Builder.PathablePrototypeBuilder.UnpackPathableAsync(poisNode.SubNodes[i], _packResourceManager, _packCollection.Categories);
 

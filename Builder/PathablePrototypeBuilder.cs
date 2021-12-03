@@ -33,14 +33,14 @@ namespace TmfLib.Builder {
                 if (pathableResourceManager.ResourceExists(trlFile)) {
                     var trlStream = await pathableResourceManager.LoadResourceAsync(trlFile);
 
-                    var firstSegment = TrlFileReader.GetTrailSegments(trlStream).FirstOrDefault();
-
-                    if (firstSegment == null) {
-                        // Oops
+                    int mapId = TrlFileReader.GetTrailMap(trlStream);
+                    
+                    if (mapId < 0) {
+                        // Format parse failure.
                         return null;
                     }
 
-                    trailAttributes.AddOrUpdateAttribute(new Prototype.Attribute(PackConstImpl.XML_KNOWNATTRIBUTE_MAPID, firstSegment.MapId.ToString()));
+                    trailAttributes.AddOrUpdateAttribute(new Prototype.Attribute(PackConstImpl.XML_KNOWNATTRIBUTE_MAPID, mapId.ToString()));
 
                     return await Trail.Build(pathableResourceManager, trailAttributes, rootPathingCategory);
                 } else {

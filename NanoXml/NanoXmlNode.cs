@@ -94,19 +94,12 @@ namespace NanoXml {
         /// </summary>
         public List<NanoXmlAttribute> Attributes => _attributes;
 
-        public NanoXmlNode[] SelectNodes(string nodeName) {
-            var matchedNodes    = new NanoXmlNode[_subNodes.Count];
-            int numberOfMatches = 0;
-
+        public IEnumerable<NanoXmlNode> SelectNodes(string nodeName) {
             for (int i = 0; i < _subNodes.Count; i++) {
                 if (_subNodes[i].Name == nodeName) {
-                    matchedNodes[numberOfMatches++] = _subNodes[i];
+                    yield return _subNodes[i];
                 }
             }
-
-            Array.Resize(ref matchedNodes, numberOfMatches);
-
-            return matchedNodes;
         }
 
         /// <summary>

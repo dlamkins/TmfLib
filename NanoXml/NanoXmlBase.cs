@@ -8,7 +8,7 @@ namespace NanoXml {
     public abstract class NanoXmlBase {
 
         protected static bool IsSpace(char c) {
-            return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+            return c is ' ' or '\t' or '\n' or '\r';
         }
 
         protected static void SkipSpaces(string str, ref int i) {
