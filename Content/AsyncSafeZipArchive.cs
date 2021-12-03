@@ -27,7 +27,13 @@ namespace TmfLib.Content {
             var (archive, generation) = GetArchive();
 
             for (int i = 0; i < archive.Entries.Count; i++) {
-                _entryLookup.Add(GetUniformFilePath(archive.Entries[i].FullName), i);
+                string filePath = GetUniformFilePath(archive.Entries[i].FullName);
+
+                // We have to check because zips are case sensitive and technically
+                // can have duplicate entries that vary only by capitalization.
+                if (!_entryLookup.ContainsKey(filePath)) {
+                    _entryLookup.Add(filePath, i);
+                }
             }
 
             ReturnArchive(archive, generation);

@@ -6,7 +6,7 @@ using System.Text;
 using TmfLib.Prototype;
 
 namespace TmfLib.Pathable {
-    public class PathingCategory : KeyedCollection<string, PathingCategory>, IAggregatesAttributes {
+    public class PathingCategory : ConcurrentKeyedCollection<string, PathingCategory>, IAggregatesAttributes {
 
         private const bool DEFAULT_ISSEPARATOR   = false;
         private const bool DEFAULT_DEFAULTTOGGLE = true;
@@ -41,9 +41,12 @@ namespace TmfLib.Pathable {
             set {
                 if (_parent == value) return;
 
+                // Remove from old parent if we had one.
                 _parent?.Remove(this);
 
                 _parent = value;
+
+                // We silently ignore duplicates
                 _parent?.Add(this);
 
                 SpoilNamespaceCache();
