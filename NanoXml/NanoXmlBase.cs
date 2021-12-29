@@ -89,8 +89,7 @@ namespace NanoXml {
         }
 
         protected static string CleanValue(string str) {
-            return str.Replace("*", "")
-                      .Replace("&lt;",   "<")
+            return str.Replace("&lt;",   "<")
                       .Replace("&gt;",   ">")
                       .Replace("&amp;",  "&")
                       .Replace("&quot;", "\"")
