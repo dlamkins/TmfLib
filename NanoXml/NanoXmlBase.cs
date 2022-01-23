@@ -7,7 +7,7 @@ namespace NanoXml {
     /// </summary>
     public abstract class NanoXmlBase {
 
-        protected static bool IsSpace(char c) {
+        private static bool IsSpace(char c) {
             return c is ' ' or '\t' or '\n' or '\r';
         }
 
@@ -71,17 +71,14 @@ namespace NanoXml {
         }
 
         protected static string CleanName(string str, string[] trimmedPrefixes) {
-            // COMPAT: Some packs have random invalid characters
-            // COMPAT: Tekkit packs have 0 before behavior in some places
-            string cleanName = str.Replace("*", "")
-                                  .TrimStart('0')
-                                  .ToLowerInvariant();
+            string cleanName = str.ToLowerInvariant();
 
             // Vender prefix support allows us to ignore the
             // prefix when the caller wants to support it.
-            foreach (string venderPrefix in trimmedPrefixes) {
-                if (cleanName.StartsWith(venderPrefix)) {
-                    return cleanName.Remove(0, venderPrefix.Length);
+            for (int i = 0; i < trimmedPrefixes.Length; i++) {
+                ref string prefix = ref trimmedPrefixes[i];
+                if (cleanName.StartsWith(prefix)) {
+                    return cleanName.Remove(0, prefix.Length);
                 }
             }
 
@@ -89,6 +86,7 @@ namespace NanoXml {
         }
 
         protected static string CleanValue(string str) {
+            // eww
             return str.Replace("&lt;",   "<")
                       .Replace("&gt;",   ">")
                       .Replace("&amp;",  "&")

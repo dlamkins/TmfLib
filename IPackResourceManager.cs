@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Threading.Tasks;
 
 namespace TmfLib {
 
@@ -7,6 +8,8 @@ namespace TmfLib {
         bool ResourceExists(string resourcePath);
 
         Task<byte[]> LoadResourceAsync(string resourcePath);
+
+        Task<Stream> LoadResourceStreamAsync(string resourcePath);
 
     }
 

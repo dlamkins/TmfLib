@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.IO;
 using System.Threading.Tasks;
 using TmfLib.Content;
 
@@ -19,6 +17,10 @@ namespace TmfLib {
 
         public async Task<byte[]> LoadResourceAsync(string resourcePath) {
             return await this.DataReader.GetFileBytesAsync(resourcePath);
+        }
+
+        public async Task<Stream> LoadResourceStreamAsync(string resourcePath) {
+            return await this.DataReader.GetFileStreamAsync(resourcePath);
         }
 
     }
