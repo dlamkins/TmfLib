@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net;
 
 namespace NanoXml {
 
@@ -71,28 +72,20 @@ namespace NanoXml {
         }
 
         protected static string CleanName(string str, string[] trimmedPrefixes) {
-            string cleanName = str.ToLowerInvariant();
-
             // Vender prefix support allows us to ignore the
             // prefix when the caller wants to support it.
             for (int i = 0; i < trimmedPrefixes.Length; i++) {
                 ref string prefix = ref trimmedPrefixes[i];
-                if (cleanName.StartsWith(prefix)) {
-                    return cleanName.Remove(0, prefix.Length);
+                if (str.StartsWith(prefix, System.StringComparison.OrdinalIgnoreCase)) {
+                    return str.Remove(0, prefix.Length).ToLowerInvariant();
                 }
             }
 
-            return cleanName;
+            return str.ToLowerInvariant();
         }
 
         protected static string CleanValue(string str) {
-            // eww
-            return str.Replace("&lt;",   "<")
-                      .Replace("&gt;",   ">")
-                      .Replace("&amp;",  "&")
-                      .Replace("&quot;", "\"")
-                      .Replace("&apos;", "'")
-                      .Replace("&#xA;", "\n");
+            return WebUtility.HtmlDecode(str);
         }
     }
 }

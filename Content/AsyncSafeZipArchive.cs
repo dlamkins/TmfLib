@@ -40,7 +40,7 @@ namespace TmfLib.Content {
         }
 
         private string GetUniformFilePath(string filePath) {
-            return filePath.Replace(@"\", "/").Replace("//", "/").ToLowerInvariant().Trim();
+            return filePath.Replace(@"\", "/").Replace("//", "/").ToLowerInvariant().Trim().TrimStart('.');
         }
 
         public bool FileExists(string filePath) {

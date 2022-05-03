@@ -38,7 +38,7 @@ namespace TmfLib.Content {
         public Stream GetFileStream(string filePath) {
             if (!this.FileExists(filePath)) return null;
 
-            return File.Open(Path.Combine(_directoryPath, filePath), FileMode.Open);
+            return File.Open(Path.Combine(_directoryPath, filePath), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         }
 
         public byte[] GetFileBytes(string filePath) {

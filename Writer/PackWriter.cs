@@ -76,7 +76,7 @@ namespace TmfLib.Writer {
                                                 .Where(s => s != null && pack.ResourceManager.ResourceExists(s)); // seems cursed
 
             foreach (string resourcePath in resources) {
-                yield return (resourcePath, new MemoryStream(await pack.ResourceManager.LoadResourceAsync(resourcePath)));
+                yield return (resourcePath.ToLowerInvariant(), new MemoryStream(await pack.ResourceManager.LoadResourceAsync(resourcePath)));
             }
         }
 
