@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using TmfLib.Prototype;
@@ -10,6 +9,7 @@ namespace TmfLib.Pathable {
 
         private const bool DEFAULT_ISSEPARATOR   = false;
         private const bool DEFAULT_DEFAULTTOGGLE = true;
+        private const bool DEFAULT_ISHIDDEN      = false;
 
         public AttributeCollection ExplicitAttributes { get; } = new();
 
@@ -82,6 +82,11 @@ namespace TmfLib.Pathable {
         /// </summary>
         public bool DefaultToggle { get; set; } = DEFAULT_DEFAULTTOGGLE;
 
+        /// <summary>
+        /// If the category should be hidden by default.
+        /// </summary>
+        public bool IsHidden { get; set; } = DEFAULT_ISHIDDEN;
+
         private string _cachedNamespace = null;
         /// <summary>
         /// The full namespace that this category is within.
@@ -107,6 +112,7 @@ namespace TmfLib.Pathable {
                 category.SpoilNamespaceCache();
             } 
         }
+
         private static string GetTacOSafeName(string name) {
             // TacO documentation states: Must not contain any spaces or special characters.
             // http://www.gw2taco.com/2016/01/how-to-create-your-own-marker-pack.html

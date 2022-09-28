@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace TmfLib.Content {
-    internal sealed class ZipArchiveReader : IDataReader {
+    public sealed class ZipArchiveReader : IDataReader {
 
         private readonly AsyncSafeZipArchive _archive;
 

@@ -16,8 +16,8 @@ namespace TmfLib.Writer {
         private static readonly string[] _manualMarkerCategories = {
             PackConstImpl.XML_KNOWNATTRIBUTE_NAME,
             //"displayname",
-            //"isseparator",
-            //"defaulttoggle"
+            "isseparator",
+            "defaulttoggle"
         };
 
         public PackWriter(PackWriterSettings settings = null) {
@@ -153,6 +153,19 @@ namespace TmfLib.Writer {
             categoryWriter.WriteStartElement(PackConstImpl.XML_ELEMENT_MARKERCATEGORY);
 
             categoryWriter.WriteAttributeString(PackConstImpl.XML_KNOWNATTRIBUTE_NAME, pathingCategory.Name);
+
+            // We only write these out if they're not the default value.
+            if (!pathingCategory.DefaultToggle) {
+                categoryWriter.WriteAttributeString("defaulttoggle", pathingCategory.DefaultToggle ? "1" : "0");
+            }
+
+            if (pathingCategory.IsSeparator) {
+                categoryWriter.WriteAttributeString("isseparator", pathingCategory.IsSeparator ? "1" : "0");
+            }
+
+            if (pathingCategory.IsHidden) {
+                categoryWriter.WriteAttributeString("ishidden", pathingCategory.IsHidden ? "1" : "0");
+            }
 
             foreach (var attribute in pathingCategory.ExplicitAttributes.Where(attribute => !_manualMarkerCategories.Contains(attribute.Name))) {
                 categoryWriter.WriteAttributeString(attribute.Name, attribute.Value);

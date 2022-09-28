@@ -5,7 +5,7 @@ using TmfLib.Content;
 namespace TmfLib {
     public class PackResourceManager : IPackResourceManager {
 
-        private IDataReader DataReader { get; }
+        public IDataReader DataReader { get; }
 
         internal PackResourceManager(IDataReader dataReader) {
             this.DataReader = dataReader;

@@ -12,6 +12,7 @@ namespace TmfLib.Builder {
         private const string MARKERCATEGORY_DISPLAYNAME_ATTR   = "displayname";
         private const string MARKERCATEGORY_ISSEPARATOR_ATTR   = "isseparator";
         private const string MARKERCATEGORY_DEFAULTTOGGLE_ATTR = "defaulttoggle";
+        private const string MARKERCATEGORY_ISHIDDEN_ATTR      = "ishidden";
 
         public static void UnpackCategory(NanoXmlNode categoryNode, PathingCategory pathingCategoryParent) {
             if (!string.Equals(categoryNode.Name, ELEMENT_CATEGORY, StringComparison.OrdinalIgnoreCase)) {
@@ -55,12 +56,16 @@ namespace TmfLib.Builder {
             if (categoryNode.TryGetAttribute(MARKERCATEGORY_DEFAULTTOGGLE_ATTR, out var defaultToggleAttr))
                 subjCategory.DefaultToggle = defaultToggleAttr.Value != "0";
 
+            if (categoryNode.TryGetAttribute(MARKERCATEGORY_ISHIDDEN_ATTR, out var isHiddenAttr))
+                subjCategory.IsHidden = isHiddenAttr.Value != "0";
+
             // Remove redundant attributes now kept track of by the pathable itself.
             categoryNode.Attributes.RemoveAll(attr => new[] {
                                                   MARKERCATEGORY_NAME_ATTR,
                                                   //MARKERCATEGORY_DISPLAYNAME_ATTR,
                                                   MARKERCATEGORY_ISSEPARATOR_ATTR,
-                                                  MARKERCATEGORY_DEFAULTTOGGLE_ATTR
+                                                  MARKERCATEGORY_DEFAULTTOGGLE_ATTR,
+                                                  MARKERCATEGORY_ISHIDDEN_ATTR
                                               }.Contains(attr.Name));
 
             subjCategory.SetAttributes(PathablePrototypeAttributeBuilder.FromNanoXmlNode(categoryNode));
